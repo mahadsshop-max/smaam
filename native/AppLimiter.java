@@ -16,7 +16,7 @@ public class AppLimiter extends Plugin {
   @PluginMethod public void status(PluginCall c) {
     Context x = getContext();
     AppOpsManager a = (AppOpsManager) x.getSystemService(Context.APP_OPS_SERVICE);
-    int m = a.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), x.getPackageName());
+    int m = a.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), x.getPackageName());
     JSObject o = new JSObject(); o.put("usage", m == AppOpsManager.MODE_ALLOWED); o.put("overlay", Settings.canDrawOverlays(x)); c.resolve(o);
   }
   @PluginMethod public void openUsage(PluginCall c) { go(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)); c.resolve(); }
