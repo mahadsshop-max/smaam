@@ -14,6 +14,7 @@ jobs:
         with: { distribution: temurin, java-version: 17 }
       - run: npm install
       - run: npx cap add android
+      - run: bash native/setup.sh
       - name: Add camera and mic permissions
         run: |
           sed -i 's#<application#<uses-feature android:name="android.hardware.camera" android:required="false"/>\n    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.RECORD_AUDIO"/>\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>\n    <application#' android/app/src/main/AndroidManifest.xml
