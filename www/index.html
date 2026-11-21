@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SMAAM</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700;9..144,900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#e8dfcc;--ink:#23201a;--mut:#70675a;--red:#b3261e;--hl:#f0d95a;--line:rgba(35,32,26,.4);--serif:"Fraunces",Georgia,serif;--hand:"Caveat","Bradley Hand","Segoe Print",cursive;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#2b2822;--ink:#efe7d4;--mut:#a59c8a;--red:#e86a60;--hl:#6f6118;--line:rgba(239,231,212,.35);color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#2b2822;--ink:#efe7d4;--mut:#a59c8a;--red:#e86a60;--hl:#6f6118;--line:rgba(239,231,212,.35);color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.5 var(--serif);-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--paper);z-index:10}
+/* crumpled paper: SVG turbulence lit from one side + fine grain */
+body::after{content:"";position:fixed;inset:0;z-index:200;pointer-events:none;mix-blend-mode:multiply;opacity:.62;background:
+url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .4 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='turbulence' baseFrequency='.007 .009' numOctaves='4' seed='11'/%3E%3CfeDiffuseLighting lighting-color='%23fff' surfaceScale='7'%3E%3CfeDistantLight azimuth='225' elevation='52'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");background-size:260px,900px}
+.wrap{max-width:640px;margin:0 auto;padding:22px 22px 120px;position:relative}
+h1,h2,h3{margin:0;font-weight:900}
+.logo{font-size:46px;letter-spacing:.14em;line-height:1}
+.scr{width:210px;height:14px;display:block;margin-top:2px}
+.scr path,.under path{fill:none;stroke:var(--red);stroke-width:3;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.1s .3s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.hand,.lbl,.note{font-family:var(--hand);font-weight:700}
+.lbl{font-size:23px;color:var(--mut);line-height:1.1}
+.note{font-size:21px;color:var(--mut)}
+.rule{border:0;border-top:2px dashed var(--line);margin:26px 0}
+.view{display:none}
+.view.on{display:block;animation:unfold .5s cubic-bezier(.2,.8,.3,1);transform-origin:top}
+@keyframes unfold{from{opacity:0;transform:perspective(700px) rotateX(-14deg) translateY(14px)}}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
+.num{font-size:84px;font-weight:900;line-height:.95;font-variant-numeric:tabular-nums}
+.big{font-size:26px;margin:6px 0 4px}
+.tg{display:inline-flex;gap:6px;position:relative;margin:10px 14px 0 0;height:34px}
+.tg b{width:3px;background:var(--ink);border-radius:2px;transform-origin:top;animation:grow .4s both}
+.tg b:nth-child(2){animation-delay:.08s}.tg b:nth-child(3){animation-delay:.16s}.tg b:nth-child(4){animation-delay:.24s}
+.tg u{position:absolute;left:-5px;right:-5px;top:50%;border-top:3px solid var(--red);transform:rotate(-24deg);animation:grow .3s .4s both;transform-origin:left}
+@keyframes grow{from{transform:scaleY(0)}}
+.pencil{height:10px;position:relative;margin:12px 0 8px}
+.pencil::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--line)}
+.pencil i{display:block;height:7px;border-radius:3px 7px 4px 8px/7px 3px 8px 4px;background:var(--ink);opacity:.82;transition:width .6s cubic-bezier(.3,.9,.3,1),background .4s;transform:rotate(-.5deg)}
+.warn i,.over i{background:var(--red)}
+input,select{font:inherit;color:var(--ink);background:transparent;border:0;border-bottom:2px solid var(--ink);border-radius:0;padding:6px 2px;min-width:0;outline:none}
+input:focus,select:focus{border-bottom-color:var(--red)}
+select option{background:var(--paper)}
+input[type=range]{border:0;accent-color:var(--ink);width:110px}
+.btn{font:700 17px var(--serif);color:var(--ink);background:none;border:2px solid var(--ink);border-radius:255px 18px 225px 18px/18px 225px 18px 255px;padding:.5em 1.1em;cursor:pointer;transition:transform .15s,background .2s,color .2s}
+.btn:hover{transform:rotate(-1.5deg) scale(1.03)}.btn:active{transform:scale(.95)}
+.btn.fill{background:var(--ink);color:var(--paper)}.btn.red{border-color:var(--red);background:var(--red);color:#fff}
+.btn.full{width:100%;font-size:21px;padding:.8em}.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.link{font:700 22px var(--hand);background:none;border:0;color:var(--ink);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;cursor:pointer;padding:4px 6px}
+.link:hover{color:var(--red)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.grow{flex:1;min-width:0}
+.app{padding:18px 0;border-bottom:2px dashed var(--line)}
+.app h3{font-size:28px;position:relative;display:inline-block}
+.app h3::after{content:"";position:absolute;left:-4px;top:55%;height:3px;width:0;background:var(--red);transition:width .6s;transform:rotate(-1.5deg)}
+.app.over h3::after{width:calc(100% + 8px)}
+.stamp-s{display:inline-block;border:2px solid var(--red);color:var(--red);font:900 12px var(--serif);letter-spacing:.12em;padding:1px 7px;margin-left:10px;transform:rotate(-5deg);vertical-align:middle;text-transform:uppercase}
+.chk{width:30px;height:30px;border:2.5px solid var(--ink);border-radius:5px 9px 6px 10px;background:none;padding:0;position:relative;cursor:pointer;flex:none}
+.chk::after{content:"";position:absolute;left:8px;top:-4px;width:9px;height:20px;border:solid var(--red);border-width:0 4px 4px 0;transform:rotate(40deg) scale(0);transition:transform .25s cubic-bezier(.3,1.8,.5,1)}
+.chk.on::after{transform:rotate(40deg) scale(1)}
+.time{font-size:54px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--paper);border-top:2px dashed var(--line);padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px))}
+nav div{display:flex;max-width:640px;margin:0 auto}
+nav button{flex:1;background:none;border:0;color:var(--mut);font:700 26px var(--hand);padding:8px 0;position:relative;cursor:pointer}
+nav button.on{color:var(--ink)}
+nav button::after{content:"";position:absolute;left:50%;right:50%;bottom:4px;border-bottom:3px solid var(--red);border-radius:3px;transition:left .3s,right .3s}
+nav button.on::after{left:22%;right:22%}
+.full-o{position:fixed;inset:0;z-index:50;display:none;overflow:auto;background:var(--paper);padding:calc(22px + env(safe-area-inset-top,0px)) 22px calc(22px + env(safe-area-inset-bottom,0px))}
+.full-o.on{display:block}
+.inner{max-width:520px;margin:0 auto}
+#limitM .inner{text-align:center;padding-top:12vh}
+.stamp{display:inline-block;border:6px solid var(--red);color:var(--red);font:900 clamp(22px,8vw,40px) var(--serif);letter-spacing:.04em;padding:.1em .35em;border-radius:8px;text-transform:uppercase;max-width:100%;transform:rotate(-8deg);animation:slam .55s cubic-bezier(.2,1.6,.4,1) both;margin:26px 0}
+@keyframes slam{from{transform:rotate(-8deg) scale(3.2);opacity:0}to{transform:rotate(-8deg) scale(1);opacity:.92}}
+.ringing{display:inline-block;animation:wob .5s infinite alternate ease-in-out;transform-origin:50% 0}
+@keyframes wob{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+.task{font:700 34px/1.25 var(--hand);margin:18px 0 26px}
+.mark{background:linear-gradient(transparent 52%,var(--hl) 52%) no-repeat;background-size:0 100%;animation:mk .9s .15s forwards;padding:0 4px}
+@keyframes mk{to{background-size:100% 100%}}
+.photo{background:#f4eedd;padding:10px 10px 38px;box-shadow:0 10px 24px rgba(0,0,0,.3);transform:rotate(-1.3deg);position:relative;color:#23201a}
+.photo::before{content:"";position:absolute;left:50%;top:-13px;width:96px;height:28px;background:rgba(235,215,130,.7);transform:translateX(-50%) rotate(3deg);z-index:2}
+.vid{position:relative;aspect-ratio:4/3;background:#17150f;display:grid;place-items:center;overflow:hidden}
+.vid video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vid p{position:relative;color:#d9d1bd;font:700 22px var(--hand);text-align:center;padding:16px;margin:0}
+.cap{position:absolute;left:14px;bottom:8px;font:700 22px var(--hand);color:#23201a}
+.cap.rec{color:var(--red);animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.4}}
+.crumple .inner{animation:crumple .85s ease-in forwards}
+.crumple{animation:bgout .85s forwards}
+@keyframes crumple{35%{transform:scale(.8,.55) rotate(7deg) skew(6deg);filter:contrast(1.4)}70%{transform:scale(.3,.2) rotate(120deg)}100%{transform:scale(.01) rotate(300deg);opacity:0}}
+@keyframes bgout{0%,55%{opacity:1}100%{opacity:0}}
+.empty{font:700 24px var(--hand);color:var(--mut);padding:24px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 class="logo">SMAAM</h1>
+    <svg class="scr" viewBox="0 0 200 14" preserveAspectRatio="none"><path pathLength="1" d="M2 9 C40 2 80 13 120 6 S180 4 198 8"/></svg>
+    <div class="note" id="date" style="margin-top:6px"></div>
+  </header>
+
+  <section class="view on" id="v-home">
+    <div class="two">
+      <div><div class="lbl">Routine streak</div><div class="num" id="sStreak">0</div></div>
+      <div><div class="lbl">Proofs today</div><div class="num" id="sDone">0</div></div>
+    </div>
+    <div id="tally"></div>
+    <hr class="rule">
+    <div class="lbl">Daily screen time budget</div>
+    <div class="note" style="font-size:19px;line-height:1.2">Set it before you start. Use any apps you like until it runs out, then everything locks until tomorrow. Once you begin, it can only go down.</div>
+    <p class="big"><b id="goalUsed">0</b> of <input id="goal" type="number" min="10" step="10" style="width:76px;font-weight:700"> minutes</p>
+    <div class="pencil" id="goalBar"><i style="width:0"></i></div>
+    <div class="note" id="goalTxt"></div>
+    <hr class="rule">
+    <div class="lbl">Next alarm</div>
+    <div id="nextAlarm" style="margin:8px 0 22px"></div>
+    <button class="btn fill full" id="testBtn">Test alarm now</button>
+  </section>
+
+  <section class="view" id="v-limits">
+    <div class="lbl" style="margin-top:22px">Add an app</div>
+    <div id="presets" style="margin:4px -6px 10px"></div>
+    <div class="row"><input class="grow" id="cName" placeholder="Custom app name"><input id="cLimit" type="number" min="5" step="5" value="30" style="width:64px"><span class="note">min</span><button class="btn" id="cAdd">Add</button></div>
+    <hr class="rule" style="margin-bottom:6px">
+    <div class="row" style="padding:8px 0"><div class="grow"><b>Fast simulation</b><div class="note">one second counts as one minute</div></div><button class="chk" id="fast" aria-label="Fast simulation"></button></div>
+    <div id="apps"></div>
+  </section>
+
+  <section class="view" id="v-alarms">
+    <div class="lbl" style="margin-top:22px">New alarm</div>
+    <div class="row" style="margin-top:6px"><input id="aTime" type="time" value="07:00" style="font-size:26px;font-weight:700"><input class="grow" id="aLabel" placeholder="Label, e.g. Wake up"></div>
+    <div class="row" style="margin:10px 0 18px"><select id="aMode"><option value="random">Random challenge</option><option value="specific">Specific challenge</option></select><select class="grow" id="aPrompt" style="display:none"></select></div>
+    <button class="btn fill full" id="aAdd">Add alarm</button>
+    <hr class="rule">
+    <div class="row"><b class="grow">Alarm sound</b><button class="link" id="muteBtn"></button><input id="vol" type="range" min="0" max="1" step=".05" aria-label="Volume"></div>
+    <div id="alarms"></div>
+  </section>
+</div>
+
+<nav><div>
+  <button data-v="home" class="on">Today</button>
+  <button data-v="limits">Limits</button>
+  <button data-v="alarms">Alarms</button>
+</div></nav>
+
+<div class="full-o" id="limitM"><div class="inner">
+  <div class="stamp" id="lmStamp">Limit reached</div>
+  <h2 id="lmTitle" style="font-size:30px"></h2>
+  <p class="note" id="lmMsg" style="font-size:25px">Today’s time is used up. Put the phone down. What would you rather be doing?</p>
+  <button class="btn fill full" id="lmExtra" style="margin:14px 0 10px">Request 5 extra minutes</button>
+  <button class="btn full" id="lmLock">Lock until tomorrow</button>
+</div></div>
+
+<div class="full-o" id="alarmM"><div class="inner">
+  <div class="row"><h2 class="grow" style="font-size:30px"><span class="ringing" id="amLabel"></span></h2><button class="link" id="amMute"></button></div>
+  <div class="task" id="amTask"></div>
+  <div class="photo">
+    <div class="vid"><video id="live" autoplay muted playsinline></video><video id="play" controls playsinline style="display:none"></video><p id="camMsg"></p></div>
+    <span class="cap" id="cap">Proof clip</span>
+  </div>
+  <div class="row" style="margin-top:26px" id="camBtns"><button class="btn fill grow" id="camOn">Enable camera</button><button class="btn" id="camSkip">Skip camera</button></div>
+  <div class="row" style="margin-top:26px;display:none" id="recBtns"><button class="btn red grow" id="recBtn">Start recording</button><a id="dl" class="link" style="display:none" download="smaam-challenge.webm">Download clip</a></div>
+  <button class="btn full" id="verify" style="margin-top:16px" disabled>Verify challenge</button>
+  <div id="analyze" style="display:none;margin-top:16px"><div class="lbl" id="anTxt">Analyzing challenge…</div><div class="pencil"><i id="anBar" style="width:0"></i></div></div>
+  <button class="btn fill full" id="confirm" style="margin-top:14px;display:none">Confirm &amp; dismiss alarm</button>
+</div></div>
+
+<script>
+// ---------- Config ----------
+const KEY = "smaam.v1";
+const PROMPTS = ["Show the inside of your fridge","Do a 15-second dance","Show a glass of water on camera","Step near a window or outdoors","Show your desk/bed tidy"];
+const PRESETS = [["Instagram",30],["TikTok",30],["YouTube",45],["Gaming",60],["X",20]];
+const $ = s => document.querySelector(s);
+const todayStr = (d = new Date()) => d.toLocaleDateString("en-CA");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const setH = (el, h) => { if (el._h !== h) { el._h = h; el.innerHTML = h; } }; // avoid replaying animations
+
+// ---------- State ----------
+let S = load();
+function load() {
+  try { const r = JSON.parse(localStorage.getItem(KEY)); if (r && r.apps) return r; } catch (e) {}
+  return { apps: [], alarms: [], streak: 0, last: "", done: 0, day: todayStr(), goal: 120, muted: false, vol: .6, fast: false };
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function dailyReset() {
+  if (S.day === todayStr()) return;
+  S.apps.forEach(a => { a.used = 0; a.locked = false; a.extra = 0; });
+  S.alarms.forEach(a => a.fired = ""); S.done = 0; S.day = todayStr(); save();
+}
+function streakVal() {
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  return (S.last === todayStr() || S.last === todayStr(y)) ? S.streak : 0;
+}
+
+// ---------- Navigation ----------
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + b.dataset.v));
+  window.scrollTo(0, 0);
+});
+$("#date").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+
+// ---------- Screen-time limiter ----------
+let running = null, limitApp = null;
+const totalSec = () => S.apps.reduce((t, a) => t + a.used, 0);
+const budgetDone = () => S.apps.length > 0 && totalSec() >= S.goal * 60;
+const fmt = s => { const m = Math.floor(s / 60); return m >= 60 ? Math.floor(m / 60) + "h " + (m % 60) + "m" : m + "m " + String(s % 60).padStart(2, "0") + "s"; };
+$("#presets").innerHTML = PRESETS.map((p, i) => `<button class="link" data-i="${i}">${p[0]}</button>`).join("");
+$("#presets").onclick = e => { const i = e.target.dataset.i; if (i != null) addApp(PRESETS[i][0], PRESETS[i][1]); };
+$("#cAdd").onclick = () => {
+  const n = $("#cName").value.trim(); if (!n) return $("#cName").focus();
+  addApp(n, +$("#cLimit").value || 30); $("#cName").value = "";
+};
+function addApp(name, limit) {
+  if (S.apps.some(a => a.name.toLowerCase() === name.toLowerCase())) return;
+  S.apps.push({ id: Date.now() + Math.random(), name, limit, used: 0, locked: false, extra: 0 });
+  save(); renderApps();
+}
+$("#fast").onclick = () => { S.fast = !S.fast; save(); $("#fast").classList.toggle("on", S.fast); };
+
+function renderApps() {
+  setH($("#apps"), S.apps.length ? S.apps.map(a => {
+    const pct = Math.min(100, a.used / (a.limit * 60) * 100);
+    const bd = budgetDone(), cls = a.locked || bd || pct >= 100 ? "over" : pct >= 80 ? "warn" : "";
+    const tag = bd ? `<span class="stamp-s">Budget used</span>` : a.locked ? `<span class="stamp-s">Locked till tomorrow</span>` : pct >= 100 ? `<span class="stamp-s">Limit reached</span>` : pct >= 80 ? `<span class="stamp-s">Almost out</span>` : "";
+    return `<div class="app ${cls}" data-id="${a.id}">
+      <div class="row"><div class="grow"><h3>${esc(a.name)}</h3>${tag}</div>
+      <button class="btn ${running === a.id ? "red" : ""}" data-act="toggle">${running === a.id ? "Stop" : "Start"}</button></div>
+      <div class="pencil ${cls}"><i style="width:${pct}%"></i></div>
+      <div class="row"><span class="note grow">${fmt(a.used)} of ${a.limit} min</span>
+      <button class="link" data-act="dec">less</button><button class="link" data-act="inc">more</button><button class="link" data-act="del">remove</button></div></div>`;
+  }).join("") : `<div class="empty">Nothing tracked yet. Pick an app above.</div>`);
+}
+$("#apps").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const a = S.apps.find(x => x.id == b.closest("[data-id]").dataset.id); if (!a) return;
+  const act = b.dataset.act;
+  if (act === "toggle") {
+    if (running === a.id) running = null;
+    else if (budgetDone()) return showBudget();
+    else if (a.locked || a.used >= a.limit * 60) return showLimit(a);
+    else running = a.id;
+  } else if (act === "inc") a.limit += 5;
+  else if (act === "dec") a.limit = Math.max(5, a.limit - 5);
+  else if (act === "del") { if (running === a.id) running = null; S.apps = S.apps.filter(x => x !== a); }
+  save(); renderApps(); renderHome();
+};
+function showLimit(a) {
+  limitApp = a; running = null;
+  $("#lmStamp").textContent = "Limit reached"; $("#lmTitle").textContent = a.name;
+  $("#lmMsg").textContent = "This app’s time is used up. Put the phone down. What would you rather be doing?"; $("#lmLock").textContent = "Lock until tomorrow";
+  $("#lmExtra").style.display = a.extra >= 2 || a.locked ? "none" : "block";
+  const st = $(".stamp"); st.style.animation = "none"; void st.offsetWidth; st.style.animation = "";
+  $("#limitM").classList.add("on"); renderApps();
+}
+$("#lmExtra").onclick = () => { limitApp.limit += 5; limitApp.extra++; closeLimit(); };
+$("#lmLock").onclick = () => { if (limitApp) limitApp.locked = true; closeLimit(); };
+function closeLimit() { $("#limitM").classList.remove("on"); limitApp = null; save(); renderApps(); renderHome(); }
+function showBudget() {
+  limitApp = null; running = null;
+  $("#lmStamp").textContent = "Time’s up"; $("#lmTitle").textContent = "Daily screen time used";
+  $("#lmMsg").textContent = "Your whole budget is gone. Every app stays locked until tomorrow.";
+  $("#lmExtra").style.display = "none"; $("#lmLock").textContent = "Close";
+  const st = $("#lmStamp"); st.style.animation = "none"; void st.offsetWidth; st.style.animation = "";
+  $("#limitM").classList.add("on"); renderApps();
+}
+
+setInterval(() => {
+  dailyReset();
+  const a = running && S.apps.find(x => x.id === running);
+  if (a) {
+    const left = Math.max(S.goal * 60 - totalSec(), 0);
+    a.used += Math.min(S.fast ? 60 : 1, left);
+    if (budgetDone()) showBudget();
+    else if (a.used >= a.limit * 60) { a.used = a.limit * 60; showLimit(a); }
+    save(); renderApps();
+  }
+  renderHome(); checkAlarms();
+}, 1000);
+
+// ---------- Dashboard ----------
+function tally(n) {
+  if (!n) return `<span class="note">No marks yet. Finish a proof to start your streak.</span>`;
+  n = Math.min(n, 25); let h = "";
+  for (; n >= 5; n -= 5) h += `<i class="tg"><b></b><b></b><b></b><b></b><u></u></i>`;
+  if (n) h += `<i class="tg">${"<b></b>".repeat(n)}</i>`;
+  return h;
+}
+function renderHome() {
+  const total = Math.round(S.apps.reduce((t, a) => t + a.used, 0) / 60);
+  $("#sStreak").textContent = streakVal(); $("#sDone").textContent = S.done;
+  setH($("#tally"), tally(streakVal()));
+  if (document.activeElement !== $("#goal")) $("#goal").value = S.goal;
+  $("#goal").disabled = budgetDone();
+  const pct = Math.min(100, total / S.goal * 100);
+  $("#goalUsed").textContent = total;
+  $("#goalBar").className = "pencil " + (pct >= 100 ? "over" : pct >= 80 ? "warn" : "");
+  $("#goalBar").firstElementChild.style.width = pct + "%";
+  $("#goalTxt").textContent = budgetDone() ? "Budget used. Everything is locked until tomorrow." : Math.ceil((S.goal * 60 - totalSec()) / 60) + " minutes left before everything locks";
+  const on = S.alarms.filter(a => a.on).sort((a, b) => a.time.localeCompare(b.time));
+  const now = new Date().toTimeString().slice(0, 5), nx = on.find(a => a.time > now) || on[0];
+  setH($("#nextAlarm"), nx ? `<span class="time">${nx.time}</span> <span class="note">${esc(nx.label || "Alarm")}</span>` : `<span class="note">Nothing scheduled.</span>`);
+}
+$("#goal").onchange = e => {
+  const v = Math.max(10, +e.target.value || S.goal);
+  S.goal = (totalSec() > 0 && v > S.goal) ? S.goal : v; // can only go down once today’s usage has started
+  e.target.value = S.goal; save(); renderHome();
+};
+$("#testBtn").onclick = () => openAlarm({ label: "Test alarm", mode: "random" });
+
+// ---------- Alarms ----------
+$("#aPrompt").innerHTML = PROMPTS.map(p => `<option>${p}</option>`).join("");
+$("#aMode").onchange = e => $("#aPrompt").style.display = e.target.value === "specific" ? "block" : "none";
+$("#aAdd").onclick = () => {
+  S.alarms.push({ id: Date.now(), time: $("#aTime").value || "07:00", label: $("#aLabel").value.trim(), mode: $("#aMode").value, prompt: $("#aPrompt").value, on: true, fired: "" });
+  $("#aLabel").value = ""; save(); renderAlarms(); renderHome();
+};
+function renderAlarms() {
+  setH($("#alarms"), S.alarms.length ? [...S.alarms].sort((a, b) => a.time.localeCompare(b.time)).map(a => `
+    <div class="app" data-id="${a.id}"><div class="row"><div class="grow"><div class="time">${a.time}</div><b>${esc(a.label || "Alarm")}</b>
+      <div class="note">${a.mode === "random" ? "Random challenge" : esc(a.prompt)}</div></div>
+      <button class="chk ${a.on ? "on" : ""}" data-act="on" aria-label="Toggle alarm"></button></div>
+      <div class="row"><button class="link" data-act="test">test</button><button class="link" data-act="del">delete</button></div></div>`).join("")
+    : `<div class="empty">No alarms yet.</div>`);
+}
+$("#alarms").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const a = S.alarms.find(x => x.id == b.closest("[data-id]").dataset.id); if (!a) return;
+  if (b.dataset.act === "on") a.on = !a.on;
+  else if (b.dataset.act === "del") S.alarms = S.alarms.filter(x => x !== a);
+  else return openAlarm(a);
+  save(); renderAlarms(); renderHome();
+};
+function checkAlarms() {
+  if ($("#alarmM").classList.contains("on")) return;
+  const now = new Date().toTimeString().slice(0, 5);
+  const a = S.alarms.find(x => x.on && x.time === now && x.fired !== todayStr());
+  if (a) { a.fired = todayStr(); save(); openAlarm(a); }
+}
+
+// ---------- Sound (Web Audio) ----------
+let ctx, beepTimer, t0;
+function updateMute() { const t = S.muted ? "Sound off" : "Sound on"; $("#muteBtn").textContent = t; $("#amMute").textContent = t; }
+$("#muteBtn").onclick = $("#amMute").onclick = () => { S.muted = !S.muted; save(); updateMute(); };
+$("#vol").value = S.vol; $("#vol").oninput = e => { S.vol = +e.target.value; save(); };
+function startSound() {
+  try { ctx = ctx || new (window.AudioContext || window.webkitAudioContext)(); ctx.resume(); } catch (e) { return; }
+  t0 = Date.now();
+  const beep = () => {
+    if (S.muted) return;
+    const el = (Date.now() - t0) / 1000, lvl = Math.min(1, el / 30);
+    for (let i = 0; i < (el > 15 ? 2 : 1); i++) {
+      const o = ctx.createOscillator(), g = ctx.createGain(), s = ctx.currentTime + i * .22;
+      o.type = lvl > .5 ? "square" : "sine"; o.frequency.value = 520 + lvl * 380 + i * 120;
+      g.gain.setValueAtTime(.0001, s); g.gain.exponentialRampToValueAtTime(Math.max(S.vol * (.08 + .35 * lvl), .0002), s + .03);
+      g.gain.exponentialRampToValueAtTime(.0001, s + .2);
+      o.connect(g).connect(ctx.destination); o.start(s); o.stop(s + .22);
+    }
+  };
+  beep(); beepTimer = setInterval(beep, 900);
+}
+const stopSound = () => clearInterval(beepTimer);
+
+// ---------- Challenge modal ----------
+let stream, rec, chunks, recTimer, recSecs;
+function openAlarm(a) {
+  const prompt = a.mode === "specific" && a.prompt ? a.prompt : PROMPTS[Math.floor(Math.random() * PROMPTS.length)];
+  $("#amLabel").textContent = a.label || "Alarm";
+  $("#amTask").innerHTML = `<span class="mark">${esc(prompt)}</span>`;
+  resetModal(); updateMute();
+  $("#alarmM").classList.remove("crumple"); $("#alarmM").classList.add("on"); startSound();
+}
+function resetModal() {
+  stopStream();
+  $("#live").style.display = "block"; $("#play").style.display = "none"; $("#live").srcObject = null;
+  $("#camMsg").style.display = "block"; $("#camMsg").textContent = "Camera is off. Turn it on to record your proof.";
+  $("#camBtns").style.display = "flex"; $("#recBtns").style.display = "none"; $("#dl").style.display = "none";
+  $("#camSkip").textContent = "Skip camera"; $("#recBtn").textContent = "Start recording"; $("#recBtn").onclick = recHandler;
+  $("#cap").textContent = "Proof clip"; $("#cap").classList.remove("rec");
+  $("#verify").disabled = true; $("#verify").style.display = "block";
+  $("#analyze").style.display = "none"; $("#confirm").style.display = "none"; $("#anBar").style.width = "0";
+}
+function stopStream() { if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; }
+$("#camOn").onclick = async () => {
+  try {
+    if (!navigator.mediaDevices?.getUserMedia) throw 0;
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+    $("#live").srcObject = stream; $("#camMsg").style.display = "none";
+    $("#camBtns").style.display = "none"; $("#recBtns").style.display = "flex";
+  } catch (e) {
+    $("#camMsg").textContent = "Camera blocked or unavailable. You can continue without it and self-verify.";
+    $("#camSkip").textContent = "Continue without camera";
+  }
+};
+$("#camSkip").onclick = () => {
+  $("#camMsg").textContent = "No camera. Do the challenge, then verify.";
+  $("#camBtns").style.display = "none"; $("#verify").disabled = false;
+};
+function recHandler() {
+  if (rec && rec.state === "recording") return rec.stop();
+  if (!window.MediaRecorder) { $("#camMsg").style.display = "block"; $("#camMsg").textContent = "Recording isn’t supported here. Verify manually."; $("#verify").disabled = false; return; }
+  chunks = []; recSecs = 0; rec = new MediaRecorder(stream);
+  rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+  rec.onstop = () => {
+    clearInterval(recTimer); $("#cap").classList.remove("rec"); $("#cap").textContent = "Clip saved, " + recSecs + "s";
+    const url = URL.createObjectURL(new Blob(chunks, { type: rec.mimeType || "video/webm" }));
+    $("#play").src = url; $("#play").style.display = "block"; $("#live").style.display = "none";
+    $("#dl").href = url; $("#dl").style.display = "inline";
+    $("#recBtn").textContent = "Record again"; $("#verify").disabled = false;
+    $("#recBtn").onclick = () => { $("#play").style.display = "none"; $("#live").style.display = "block"; $("#dl").style.display = "none"; $("#recBtn").textContent = "Start recording"; $("#verify").disabled = true; $("#recBtn").onclick = recHandler; };
+  };
+  rec.start(); $("#recBtn").textContent = "Stop recording"; $("#cap").classList.add("rec"); $("#cap").textContent = "Recording 0:00";
+  recTimer = setInterval(() => {
+    recSecs++; $("#cap").textContent = "Recording " + Math.floor(recSecs / 60) + ":" + String(recSecs % 60).padStart(2, "0");
+    if (recSecs >= 30) rec.stop();
+  }, 1000);
+}
+$("#recBtn").onclick = recHandler;
+$("#verify").onclick = () => {
+  $("#verify").style.display = "none"; $("#analyze").style.display = "block";
+  const msgs = ["Analyzing challenge…", "Checking your clip…", "Almost there…"]; let p = 0;
+  const iv = setInterval(() => {
+    p += 5; $("#anBar").style.width = p + "%"; $("#anTxt").textContent = msgs[Math.min(2, Math.floor(p / 35))];
+    if (p >= 100) { clearInterval(iv); $("#anTxt").textContent = "Challenge verified."; $("#confirm").style.display = "block"; stopSound(); }
+  }, 150);
+};
+$("#confirm").onclick = () => {
+  stopSound(); stopStream();
+  const t = todayStr();
+  if (S.last !== t) { const y = new Date(); y.setDate(y.getDate() - 1); S.streak = S.last === todayStr(y) ? S.streak + 1 : 1; S.last = t; }
+  S.done++; save();
+  $("#alarmM").classList.add("crumple"); // scrunch the paper, then close
+  setTimeout(() => { $("#alarmM").classList.remove("on", "crumple"); renderHome(); }, 850);
+};
+
+// ---------- Init ----------
+dailyReset(); $("#fast").classList.toggle("on", S.fast); updateMute();
+renderApps(); renderAlarms(); renderHome();
+</script>
+</body>
+</html>
